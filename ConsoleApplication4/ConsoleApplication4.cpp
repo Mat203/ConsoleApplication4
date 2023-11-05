@@ -8,12 +8,11 @@
 
 
 class Airplane {
-private:
+public:
     std::string flight_number;
     std::string date;
     std::vector<std::vector<bool>> seats;
     std::map<int, double> row_prices;
-public:
     Airplane(std::string fn, std::string dt, int num_rows, int num_seats_per_row)
         : flight_number(fn), date(dt) {
         seats = std::vector<std::vector<bool>>(num_rows, std::vector<bool>(num_seats_per_row, true));
@@ -49,6 +48,18 @@ public:
         std::cout << "Row prices:" << std::endl;
         for (const auto& pair : row_prices) {
             std::cout << "Row " << pair.first + 1 << ": " << pair.second << "$" << std::endl;
+        }
+    }
+
+    void check() const {
+        std::cout << "Available seats for flight " << flight_number << " on " << date << ":" << std::endl;
+        for (int i = 0; i < seats.size(); ++i) {
+            for (int j = 0; j < seats[i].size(); ++j) {
+                if (seats[i][j]) {
+                    char seatLetter = 'A' + j;
+                    std::cout << i + 1 << seatLetter << ": " << row_prices.at(i) << "$" << std::endl;
+                }
+            }
         }
     }
 
@@ -141,6 +152,16 @@ public:
     }
 };
 
+void check(const std::vector<Airplane>& airplanes, const std::string& date, const std::string& flightNumber) {
+    for (const auto& airplane : airplanes) {
+        if (airplane.date == date && airplane.flight_number == flightNumber) {
+            airplane.check();
+            return;
+        }
+    }
+    std::cout << "No flight found with date " << date << " and flight number " << flightNumber << std::endl;
+}
+
 int main() {
     ConfigReader config_reader("config.txt");
     std::vector<Airplane> airplanes = config_reader.readConfig();
@@ -148,6 +169,8 @@ int main() {
     for (const Airplane& airplane : airplanes) {
         airplane.print_info();
     }
+
+    check(airplanes, "11.12.2022", "FQ12");
 
     return 0;
 }
