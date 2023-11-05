@@ -17,8 +17,11 @@ public:
     Airplane(std::string fn, std::string dt, int num_rows, int num_seats_per_row)
         : flight_number(fn), date(dt) {
         seats = std::vector<std::vector<bool>>(num_rows, std::vector<bool>(num_seats_per_row, true));
-        for (int i = 0; i < num_rows; i++) {
-            row_prices[i] = 100.0;
+    }
+
+    void set_row_price(int startRow, int endRow, double price) {
+        for (int i = startRow; i <= endRow; ++i) {
+            row_prices[i - 1] = price; 
         }
     }
     bool is_seat_available(int row, int seat) {
@@ -33,14 +36,21 @@ public:
         }
     }
 
-    void print_flight_number() const {
-        std::cout << flight_number << std::endl;
+    void print_info() const {
+        std::cout << "Flight number: " << flight_number << std::endl;
+        std::cout << "Date: " << date << std::endl;
+        std::cout << "Seats:" << std::endl;
+        for (int i = 0; i < seats.size(); i++) {
+            for (int j = 0; j < seats[i].size(); j++) {
+                std::cout << (seats[i][j] ? "Available" : "Booked") << " ";
+            }
+            std::cout << std::endl;
+        }
+        std::cout << "Row prices:" << std::endl;
+        for (const auto& pair : row_prices) {
+            std::cout << "Row " << pair.first + 1 << ": " << pair.second << "$" << std::endl;
+        }
     }
-
-    void print_date() const {
-        std::cout << date << std::endl;
-    }
-
 
 };
 
@@ -101,10 +111,24 @@ public:
                 if (std::getline(file, line)) {
                     std::istringstream iss(line);
                     std::string date, flight_number;
-                    int num_seats_per_row = 6; 
-                    int num_rows = 10;
-                    iss >> date >> flight_number;
+                    int num_seats_per_row;
+                    iss >> date >> flight_number >> num_seats_per_row;
+                    std::vector<int> startRows, endRows, prices;
+                    while (!iss.eof()) {
+                        int startRow, endRow, price;
+                        char dash, dollar;
+                        if (!(iss >> startRow >> dash >> endRow >> price >> dollar)) {
+                            break;
+                        }
+                        startRows.push_back(startRow);
+                        endRows.push_back(endRow);
+                        prices.push_back(price);
+                    }
+                    int num_rows = endRows.back();
                     Airplane airplane(flight_number, date, num_rows, num_seats_per_row);
+                    for (size_t i = 0; i < startRows.size(); ++i) {
+                        airplane.set_row_price(startRows[i], endRows[i], prices[i]);
+                    }
                     airplanes.push_back(airplane);
                 }
             }
@@ -122,8 +146,7 @@ int main() {
     std::vector<Airplane> airplanes = config_reader.readConfig();
 
     for (const Airplane& airplane : airplanes) {
-        airplane.print_flight_number();
-        airplane.print_date();
+        airplane.print_info();
     }
 
     return 0;
