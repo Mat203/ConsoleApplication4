@@ -34,6 +34,14 @@ public:
             std::cout << "This seat is booked" << std::endl;
         }
     }
+    int get_price(int row) {
+        return row_prices[row];
+    }
+
+
+    void free_seat(int row, int seat) {
+        seats[row][seat] = true;
+    }
 
     void print_info() const {
         std::cout << "Flight number: " << flight_number << std::endl;
@@ -70,16 +78,27 @@ class Ticket {
 private:
     int ticket_id;
     std::string passenger_name;
-    int seat_number;
-    std::string flight_info;
+    int row;
+    int seat;
+    double price;
 public:
-    Ticket() {} 
-    Ticket(int id, std::string pn, int sn, std::string fi)
-        : ticket_id(id), passenger_name(pn), seat_number(sn), flight_info(fi) {}
+    Ticket() {}
+    Ticket(int id, std::string pn, int row, int seat, double p)
+        : ticket_id(id), passenger_name(pn), row(row), seat(seat), price(p) {}
     void print_ticket() {
-        std::cout << ticket_id << passenger_name << flight_info << seat_number << std::endl;
+        std::cout << "Ticket ID: " << ticket_id << "\nPassenger Name: " << passenger_name << "\nRow: " << row << "\nSeat: " << seat << "\nPrice: " << price << "$" << std::endl;
+    }
+    int get_row() const {
+        return row;
+    }
+    int get_seat() const {
+        return seat;
+    }
+    double get_price() const {
+        return price;
     }
 };
+
 
 class User {
 private:
@@ -89,12 +108,32 @@ public:
     User() {}
     User(std::string nn) : nickname(nn) {}
     void book_ticket(Airplane& airplane, int row, int seat, std::string flight_info, int ticket_id) {
-        Ticket ticket(ticket_id, nickname, seat, flight_info);
+        double price = airplane.get_price(row);
+        Ticket ticket(ticket_id, nickname, row, seat, price);
         tickets[ticket_id] = ticket;
     }
+
     void print_tickets() {
         for (auto& ticket : tickets) {
             ticket.second.print_ticket();
+        }
+    }
+
+    bool has_ticket(int ticket_id) const {
+        return tickets.find(ticket_id) != tickets.end();
+    }
+
+    void return_ticket(Airplane& airplane, int ticket_id) {
+        if (tickets.find(ticket_id) != tickets.end()) {
+            int row = tickets[ticket_id].get_row();
+            int seat = tickets[ticket_id].get_seat();
+            airplane.free_seat(row, seat);
+            double refund = tickets[ticket_id].get_price();
+            tickets.erase(ticket_id);
+            std::cout << "Refund: " << refund << "$" << std::endl;
+        }
+        else {
+            std::cout << "Ticket not found!" << std::endl;
         }
     }
 };
@@ -192,23 +231,68 @@ public:
             }
         }
     }
+
+    void return_ticket(int ticket_id) {
+        for (auto& user_pair : users) {
+            User& user = user_pair.second;
+            if (user.has_ticket(ticket_id)) {
+                for (auto& airplane : airplanes) {
+                    user.return_ticket(airplane, ticket_id);
+                    std::cout << "Ticket returned successfully." << std::endl;
+                    return;
+                }
+            }
+        }
+        std::cout << "Ticket not found!" << std::endl;
+    }
 };
 
 int main() {
     Airline airline("config.txt");
 
-    airline.print_info();
+    while (true) {
+        std::cout << "Enter the command: ";
+        std::string command;
+        std::cin >> command;
+        airline.print_info();
 
-    airline.check("11.12.2022", "FQ12");
-
-    std::string date = "11.12.2022";
-    std::string flightNumber = "FQ12";
-    int row = 1;
-    int seat = 1;
-    std::string username = "AdamSmith";
-    airline.book(date, flightNumber, row, seat, username);
+        if (command == "check") {
+            std::string date, flightNumber;
+            std::cout << "Date: ";
+            std::cin >> date;
+            std::cout << "Flight number: ";
+            std::cin >> flightNumber;
+            airline.check(date, flightNumber);
+        }
+        else if (command == "book") {
+            std::string date, flightNumber, username;
+            int row, seat;
+            std::cout << "Date: ";
+            std::cin >> date;
+            std::cout << "Flight number: ";
+            std::cin >> flightNumber;
+            std::cout << "Enter row: ";
+            std::cin >> row;
+            std::cout << "Enter seat: ";
+            std::cin >> seat;
+            std::cout << "Enter nickname: ";
+            std::cin >> username;
+            airline.book(date, flightNumber, row-1, seat-1, username);
+        }
+        else if (command == "return") {
+            int ticket_id;
+            std::cout << "Ticket ID: ";
+            std::cin >> ticket_id;
+            std::string username;
+            airline.return_ticket(ticket_id);
+        }
+        else if (command == "quit") {
+            break;
+        }
+        else {
+            std::cout << "Unknown command!" << std::endl;
+        }
+    }
 
     return 0;
 }
-
-
