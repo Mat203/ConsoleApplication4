@@ -86,16 +86,11 @@ private:
     std::string nickname;
     std::map<int, Ticket> tickets;
 public:
+    User() {}
     User(std::string nn) : nickname(nn) {}
     void book_ticket(Airplane& airplane, int row, int seat, std::string flight_info, int ticket_id) {
-        if (airplane.is_seat_available(row, seat)) {
-            airplane.book_seat(row, seat);
-            Ticket ticket(ticket_id, nickname, seat, flight_info);
-            tickets[ticket_id] = ticket;
-        }
-        else {
-            std::cout << "This seat is already booked!" << std::endl;
-        }
+        Ticket ticket(ticket_id, nickname, seat, flight_info);
+        tickets[ticket_id] = ticket;
     }
     void print_tickets() {
         for (auto& ticket : tickets) {
@@ -152,26 +147,68 @@ public:
     }
 };
 
-void check(const std::vector<Airplane>& airplanes, const std::string& date, const std::string& flightNumber) {
-    for (const auto& airplane : airplanes) {
-        if (airplane.date == date && airplane.flight_number == flightNumber) {
-            airplane.check();
-            return;
+class Airline {
+private:
+    std::vector<Airplane> airplanes;
+    std::map<std::string, User> users;
+public:
+    Airline(const std::string& configFilename) {
+        ConfigReader config_reader(configFilename);
+        airplanes = config_reader.readConfig();
+    }
+
+    void print_info() const {
+        for (const Airplane& airplane : airplanes) {
+            airplane.print_info();
         }
     }
-    std::cout << "No flight found with date " << date << " and flight number " << flightNumber << std::endl;
-}
 
-int main() {
-    ConfigReader config_reader("config.txt");
-    std::vector<Airplane> airplanes = config_reader.readConfig();
-
-    for (const Airplane& airplane : airplanes) {
-        airplane.print_info();
+    void check(const std::string& date, const std::string& flightNumber) const {
+        for (const auto& airplane : airplanes) {
+            if (airplane.date == date && airplane.flight_number == flightNumber) {
+                airplane.check();
+                return;
+            }
+        }
+        std::cout << "No flight found with date " << date << " and flight number " << flightNumber << std::endl;
     }
 
-    check(airplanes, "11.12.2022", "FQ12");
+    void book(const std::string& date, const std::string& flightNumber, int row, int seat, const std::string& username) {
+        std::srand(std::time(0));
+        for (auto& airplane : airplanes) {
+            if (airplane.date == date && airplane.flight_number == flightNumber) {
+                if (airplane.is_seat_available(row, seat)) {
+                    int id1 = std::rand() % 10 + 10;
+                    int id2 = std::rand() % 100 + 100;
+                    int ticket_id = id1 * 1000 + id2;
+                    airplane.book_seat(row, seat);
+                    std::string flight_info = date + " " + flightNumber;
+                    users[username].book_ticket(airplane, row, seat, flight_info, ticket_id);
+                    std::cout << "Confirmed with ID " << ticket_id << std::endl;
+                }
+                else {
+                    std::cout << "This seat is already booked!" << std::endl;
+                }
+            }
+        }
+    }
+};
+
+int main() {
+    Airline airline("config.txt");
+
+    airline.print_info();
+
+    airline.check("11.12.2022", "FQ12");
+
+    std::string date = "11.12.2022";
+    std::string flightNumber = "FQ12";
+    int row = 1;
+    int seat = 1;
+    std::string username = "AdamSmith";
+    airline.book(date, flightNumber, row, seat, username);
 
     return 0;
 }
+
 
