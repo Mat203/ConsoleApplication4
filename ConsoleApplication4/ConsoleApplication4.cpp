@@ -70,7 +70,6 @@ public:
             }
         }
     }
-
 };
 
 
@@ -287,51 +286,43 @@ int main() {
     while (true) {
         std::cout << "Enter the command: ";
         std::string command;
-        std::cin >> command;
+        std::getline(std::cin, command);
+        std::istringstream iss(command);
+        std::string action;
+        iss >> action;
 
-        if (command == "check") {
+        if (action == "check") {
             std::string date, flightNumber;
-            std::cout << "Date: ";
-            std::cin >> date;
-            std::cout << "Flight number: ";
-            std::cin >> flightNumber;
+            iss >> date >> flightNumber;
             airline.check(date, flightNumber);
         }
-        else if (command == "book") {
-            std::string date, flightNumber, username;
-            int row, seat;
-            std::cout << "Date: ";
-            std::cin >> date;
-            std::cout << "Flight number: ";
-            std::cin >> flightNumber;
-            std::cout << "Enter row: ";
-            std::cin >> row;
-            std::cout << "Enter seat: ";
-            std::cin >> seat;
-            std::cout << "Enter nickname: ";
-            std::cin >> username;
-            airline.book(date, flightNumber, row-1, seat-1, username);
+        else if (action == "book") {
+            std::string date, flightNumber, username, seatInput;
+            int row;
+            iss >> date >> flightNumber >> row >> seatInput >> username;
+
+            std::cout << date << " " << flightNumber << " " << row << " " << seatInput << " " <<username << std::endl;
+
+            int seat = seatInput[0] - 'A' + 1;
+
+            airline.book(date, flightNumber, row - 1, seat - 1, username);
         }
-        else if (command == "return") {
+        else if (action == "return") {
             int ticket_id;
-            std::cout << "Ticket ID: ";
-            std::cin >> ticket_id;
-            std::string username;
+            iss >> ticket_id;
             airline.return_ticket(ticket_id);
         }
-        else if (command == "view_username") {
+        else if (action == "view_username") {
             std::string username;
-            std::cout << "Enter username: ";
-            std::cin >> username;
+            iss >> username;
             airline.view_username(username);
         }
-        else if (command == "view_id") {
+        else if (action == "view_id") {
             int ticket_id;
-            std::cout << "Enter ticket ID: ";
-            std::cin >> ticket_id;
+            iss >> ticket_id;
             airline.view_id(ticket_id);
         }
-        else if (command == "quit") {
+        else if (action == "quit") {
             break;
         }
         else {
