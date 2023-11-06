@@ -86,7 +86,11 @@ public:
     Ticket(int id, std::string fn, std::string nn, int row, int seat, double p)
         : ticket_id(id), flight_number(fn),nickname(nn), row(row), seat(seat), price(p) {}
     void print_ticket() const {
-        std::cout << "Ticket ID: " << ticket_id  << "\nFlight number: " << flight_number << "\nRow: " << row << "\nSeat: " << seat << "\nPrice: " << price << "$" << std::endl;
+        char seatLetter = 'A' + seat;
+        std::cout << "Ticket ID: " << ticket_id
+            << "\nFlight number: " << flight_number
+            << "\nSeat: " << row + 1 << seatLetter
+            << "\nPrice: " << price << "$" << std::endl;
     }
     int get_row() const {
         return row;
@@ -126,6 +130,10 @@ public:
         catch (const std::out_of_range&) {
             std::cout << "Ticket not found!" << std::endl;
         }
+    }
+
+    std::string return_nickname() {
+        return nickname;
     }
 
 
@@ -248,7 +256,7 @@ public:
             if (user.has_ticket(ticket_id)) {
                 for (auto& airplane : airplanes) {
                     user.return_ticket(airplane, ticket_id);
-                    std::cout << "Ticket returned successfully." << std::endl;
+                    std::cout << "Ticket returned successfully for user" << user.return_nickname() << std::endl;
                     return;
                 }
             }
@@ -300,8 +308,6 @@ int main() {
             std::string date, flightNumber, username, seatInput;
             int row;
             iss >> date >> flightNumber >> row >> seatInput >> username;
-
-            std::cout << date << " " << flightNumber << " " << row << " " << seatInput << " " <<username << std::endl;
 
             int seat = seatInput[0] - 'A' + 1;
 
