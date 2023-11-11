@@ -111,7 +111,7 @@ private:
 public:
     User() {}
     User(std::string nn) : nickname(nn) {}
-    void book_ticket(Airplane& airplane, int row, int seat, std::string flight_info, int ticket_id) {
+    void book_ticket(Airplane& airplane, int row, int seat, int ticket_id) {
         double price = airplane.get_price(row);
         Ticket ticket(ticket_id,airplane.flight_number, nickname, row, seat, price);
         tickets[ticket_id] = ticket;
@@ -239,8 +239,7 @@ public:
                     int id2 = std::rand() % 100 + 100;
                     int ticket_id = id1 * 1000 + id2;
                     airplane.book_seat(row, seat);
-                    std::string flight_info = date + " " + flightNumber;
-                    users[username].book_ticket(airplane, row, seat, flight_info, ticket_id);
+                    users[username].book_ticket(airplane, row, seat, ticket_id);
                     std::cout << "Confirmed with ID " << ticket_id << std::endl;
                 }
                 else {
