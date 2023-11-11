@@ -83,6 +83,18 @@ private:
     double price;
 public:
     Ticket() {}
+    Ticket(const Ticket& Other) : ticket_id(Other.ticket_id), flight_number(Other.flight_number),
+        nickname(Other.nickname), row(Other.row), seat(Other.seat), price(Other.price) {}
+    Ticket(Ticket&& Other) : ticket_id(Other.ticket_id), flight_number(Other.flight_number),
+        nickname(Other.nickname), row(Other.row), seat(Other.seat), price(Other.price) {
+        Other.ticket_id = 0;
+        Other.flight_number.clear();
+        Other.nickname.clear();
+        Other.row = 0;
+        Other.seat = 0;
+        Other.price = 0.0;
+    }
+
     Ticket(int id, std::string fn, std::string nn, int row, int seat, double p)
         : ticket_id(id), flight_number(fn),nickname(nn), row(row), seat(seat), price(p) {}
     void print_ticket() const {
